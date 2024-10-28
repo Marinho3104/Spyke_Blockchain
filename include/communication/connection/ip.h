@@ -19,6 +19,10 @@ namespace spyke::communication::connection {
 
       const bool is_valid() const;
 
+      const int get_address() const;
+
+      const short get_port() const;
+
       const bool operator==( const IP_V4& ) const;
 
       const bool operator!=( const IP_V4& ) const;
@@ -39,6 +43,10 @@ namespace spyke::communication::connection {
       IP_V6( const char[ 16 ], const short& );
   
       const bool is_valid() const;
+
+      const char* get_address() const;
+
+      const short get_port() const;
 
       const bool operator==( const IP_V6& ) const;
 

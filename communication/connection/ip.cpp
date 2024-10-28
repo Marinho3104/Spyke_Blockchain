@@ -9,6 +9,10 @@ spyke::communication::connection::IP_V4::IP_V4( const int& address, const short&
 
 const bool spyke::communication::connection::IP_V4::is_valid() const { return port; }
 
+const int spyke::communication::connection::IP_V4::get_address() const { return address; }
+
+const short spyke::communication::connection::IP_V4::get_port() const { return port; }
+
 const bool spyke::communication::connection::IP_V4::operator==( const IP_V4& other ) const { return address == other.address && port == other.port; }
 
 const bool spyke::communication::connection::IP_V4::operator!=( const IP_V4& other ) const { return ! operator==( other ); }
@@ -19,6 +23,10 @@ spyke::communication::connection::IP_V6::IP_V6() : port( 0 ) {}
 spyke::communication::connection::IP_V6::IP_V6( const char address[ 16 ], const short& port ) : port( port ) { ::std::memcpy( this->address, address, sizeof( this->address ) ); }
 
 const bool spyke::communication::connection::IP_V6::is_valid() const { return port; }
+
+const char* spyke::communication::connection::IP_V6::get_address() const { return address; }
+
+const short spyke::communication::connection::IP_V6::get_port() const { return port; }
 
 const bool spyke::communication::connection::IP_V6::operator==( const IP_V6& other ) const { return ::std::memcmp( address, other.address, sizeof( address ) ) == 0 && port == other.port; }
 

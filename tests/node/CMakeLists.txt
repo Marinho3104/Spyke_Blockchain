@@ -19,6 +19,7 @@ add_executable(
   ${PROJECT_SOURCE_DIR}/tests/node/main.cpp
 
   # Communication
+  ${PROJECT_SOURCE_DIR}/communication/connection/socket_helper.cpp
   ${PROJECT_SOURCE_DIR}/communication/connection/connection.cpp
   ${PROJECT_SOURCE_DIR}/communication/connection/ip.cpp
 

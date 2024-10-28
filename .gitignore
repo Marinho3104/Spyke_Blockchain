@@ -1,3 +1,6 @@
 
 # Cmake build dir
 build/
+
+# Clangd cache
+/.cache/
