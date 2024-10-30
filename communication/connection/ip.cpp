@@ -1,6 +1,7 @@
 
 #include "ip.h"
 #include <cstring>
+#include <netinet/in.h>
 
 
 spyke::communication::connection::IP_V4::IP_V4() : address( 0 ), port( 0 ) {}
@@ -17,6 +18,16 @@ const bool spyke::communication::connection::IP_V4::operator==( const IP_V4& oth
 
 const bool spyke::communication::connection::IP_V4::operator!=( const IP_V4& other ) const { return ! operator==( other ); }
 
+spyke::communication::connection::IP_V4 spyke::communication::connection::IP_V4::from_hint( const sockaddr_storage& hint ) {
+
+  const sockaddr_in* hint_ip_v4 = reinterpret_cast< const sockaddr_in* >( &hint );
+
+  const int address = hint_ip_v4->sin_addr.s_addr; const short port = hint_ip_v4->sin_port;
+
+  return IP_V4( address, port );
+
+}
+
 
 spyke::communication::connection::IP_V6::IP_V6() : port( 0 ) {}
 
@@ -31,3 +42,15 @@ const short spyke::communication::connection::IP_V6::get_port() const { return p
 const bool spyke::communication::connection::IP_V6::operator==( const IP_V6& other ) const { return ::std::memcmp( address, other.address, sizeof( address ) ) == 0 && port == other.port; }
 
 const bool spyke::communication::connection::IP_V6::operator!=( const IP_V6& other ) const { return ! operator==( other ); }
+
+spyke::communication::connection::IP_V6 spyke::communication::connection::IP_V6::from_hint( const sockaddr_storage& hint ) {
+
+  const sockaddr_in6* hint_ip_v6 = reinterpret_cast< const sockaddr_in6* >( &hint );
+
+  char address[ 16 ];
+  ::std::memcpy( address, hint_ip_v6->sin6_addr.s6_addr, sizeof( address ) );
+  const short port = hint_ip_v6->sin6_port;
+
+  return IP_V6( address, port );
+
+}

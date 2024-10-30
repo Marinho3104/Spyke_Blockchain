@@ -3,6 +3,7 @@
 #include "ip.h"
 #include <cstring>
 #include <type_traits>
+#include <arpa/inet.h>
 #include <unistd.h>
 #include <netinet/in.h>
 #include <sys/socket.h>
@@ -17,7 +18,7 @@ const int spyke::communication::socket_helper::connect_to( const IP_TYPE& connec
 
   // Need to be mutable for it 
   // depends o nthe template value
-  struct sockaddr_storage hint;
+  struct sockaddr_storage hint; memset( &hint, 0, sizeof( sockaddr_storage ) );
 
   if constexpr( std::is_same< IP_TYPE, connection::IP_V4 >::value ) {
 
@@ -34,9 +35,8 @@ const int spyke::communication::socket_helper::connect_to( const IP_TYPE& connec
     hint_ptr->sin6_family = AF_INET6;
     hint_ptr->sin6_port = htons( connection_ip.get_port() );
 
-    std::memcpy( &hint_ptr->sin6_addr, connection_ip.get_address(), sizeof( hint_ptr->sin6_addr ) );
-
-    throw -1; // Not sure if memcpy is correct check before using it
+    if( inet_pton(AF_INET6, connection_ip.get_address(), &hint_ptr->sin6_addr) <= 0 ) 
+      { close( socket_id ); return -1; }
 
   }
 
@@ -56,7 +56,7 @@ const int spyke::communication::socket_helper::create_server( const IP_TYPE& ser
 
   // Need to be mutable for it 
   // depends on the template value
-  struct sockaddr_storage hint;
+  struct sockaddr_storage hint; memset( &hint, 0, sizeof( sockaddr_storage ) );
 
   if constexpr( std::is_same< IP_TYPE, connection::IP_V4 >::value ) {
 
@@ -73,9 +73,8 @@ const int spyke::communication::socket_helper::create_server( const IP_TYPE& ser
     hint_ptr->sin6_family = AF_INET6;
     hint_ptr->sin6_port = htons( server_ip.get_port() );
 
-    std::memcpy( &hint_ptr->sin6_addr, server_ip.get_address(), sizeof( hint_ptr->sin6_addr ) );
-
-    throw -1; // Not sure if memcpy is correct check before using it
+    if( inet_pton(AF_INET6, server_ip.get_address(), &hint_ptr->sin6_addr) <= 0 ) 
+      { close( socket_id ); return -1; }
 
   }
 
@@ -90,7 +89,31 @@ const int spyke::communication::socket_helper::create_server( const IP_TYPE& ser
 
 }
 
+const spyke::communication::socket_helper::Accept_Connection_Request_Return spyke::communication::socket_helper::accept_connection_request( const int& server_socket_id ) {
+
+  struct sockaddr_storage hint; memset( &hint, 0, sizeof( sockaddr_storage ) );
+  socklen_t hint_size = sizeof( hint );
+
+  const int socket_id = accept( server_socket_id, ( sockaddr* ) &hint, &hint_size );
+  if( socket_id == -1 ) return { hint, -1 };
+
+  return { hint, socket_id };
+
+}
+
+template < typename IP_TYPE >
+spyke::communication::connection::Connection< IP_TYPE > spyke::communication::socket_helper::convert_connection( const Accept_Connection_Request_Return& accept_connection_request ) {
+
+  return connection::Connection< IP_TYPE >( accept_connection_request.socket_id, IP_TYPE::from_hint( accept_connection_request.hint ) );
+
+}
+
 template const int spyke::communication::socket_helper::connect_to< spyke::communication::connection::IP_V4 >( const connection::IP_V4& );
 template const int spyke::communication::socket_helper::create_server< spyke::communication::connection::IP_V4 >( const connection::IP_V4& );
+template spyke::communication::connection::Connection< spyke::communication::connection::IP_V4 > 
+  spyke::communication::socket_helper::convert_connection< spyke::communication::connection::IP_V4 >( const Accept_Connection_Request_Return& );
+
 template const int spyke::communication::socket_helper::connect_to< spyke::communication::connection::IP_V6 >( const connection::IP_V6& );
 template const int spyke::communication::socket_helper::create_server< spyke::communication::connection::IP_V6 >( const connection::IP_V6& );
+template spyke::communication::connection::Connection< spyke::communication::connection::IP_V6 > 
+  spyke::communication::socket_helper::convert_connection< spyke::communication::connection::IP_V6 >( const Accept_Connection_Request_Return& );

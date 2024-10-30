@@ -1,5 +1,6 @@
 
 #include "connection.h"
+#include "ip.h"
 #include "socket_helper.h"
 #include <unistd.h>
 
@@ -46,3 +47,7 @@ spyke::communication::connection::Connection< IP_TYPE > spyke::communication::co
   return Connection< IP_TYPE >( socket_id, ip );
 
 }
+
+
+template class spyke::communication::connection::Connection< spyke::communication::connection::IP_V4 >;
+template class spyke::communication::connection::Connection< spyke::communication::connection::IP_V6 >;

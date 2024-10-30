@@ -2,6 +2,7 @@
 #ifndef INCLUDE_COMMUNICATION_CONNECTION_IP_H
 #define INCLUDE_COMMUNICATION_CONNECTION_IP_H
 
+#include <sys/socket.h>
 namespace spyke::communication::connection {
 
   class IP_V4 {
@@ -27,6 +28,9 @@ namespace spyke::communication::connection {
 
       const bool operator!=( const IP_V4& ) const;
 
+      
+      static IP_V4 from_hint( const sockaddr_storage& );
+
   };
 
   class IP_V6 {
@@ -51,6 +55,9 @@ namespace spyke::communication::connection {
       const bool operator==( const IP_V6& ) const;
 
       const bool operator!=( const IP_V6& ) const;
+
+
+      static IP_V6 from_hint( const sockaddr_storage& );
 
   };
 
