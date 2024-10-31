@@ -1,5 +1,6 @@
 
 #include "ip.h"
+#include <arpa/inet.h>
 #include <cstring>
 #include <netinet/in.h>
 
@@ -22,7 +23,8 @@ spyke::communication::connection::IP_V4 spyke::communication::connection::IP_V4:
 
   const sockaddr_in* hint_ip_v4 = reinterpret_cast< const sockaddr_in* >( &hint );
 
-  const int address = hint_ip_v4->sin_addr.s_addr; const short port = hint_ip_v4->sin_port;
+  const int address_inv = hint_ip_v4->sin_addr.s_addr; const short port = hint_ip_v4->sin_port;
+  const int address = ( address_inv & 0xff ) << 24 | ( address_inv & 0xff00 ) << 8 | ( address_inv & 0xff0000 ) >> 8 | ( address_inv & 0xff000000 ) >> 24;
 
   return IP_V4( address, port );
 
@@ -42,6 +44,15 @@ const short spyke::communication::connection::IP_V6::get_port() const { return p
 const bool spyke::communication::connection::IP_V6::operator==( const IP_V6& other ) const { return ::std::memcmp( address, other.address, sizeof( address ) ) == 0 && port == other.port; }
 
 const bool spyke::communication::connection::IP_V6::operator!=( const IP_V6& other ) const { return ! operator==( other ); }
+
+spyke::communication::connection::IP_V6 spyke::communication::connection::IP_V6::from_hex( const char* hex_address_representation, const short& port ) {
+
+  char address[ 16 ];
+  if( inet_pton( AF_INET6, hex_address_representation, address ) <= 0 ) return IP_V6();
+
+  return IP_V6( address, port ); 
+
+}
 
 spyke::communication::connection::IP_V6 spyke::communication::connection::IP_V6::from_hint( const sockaddr_storage& hint ) {
 

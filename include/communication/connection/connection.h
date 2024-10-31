@@ -35,6 +35,8 @@ namespace spyke::communication::connection {
 
       const bool is_connected() const;
 
+      const int& get_socket_id() const;
+
       const bool operator==( const Connection& ) const;
 
       const bool operator!=( const Connection& ) const;

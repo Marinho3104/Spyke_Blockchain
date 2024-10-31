@@ -57,6 +57,8 @@ namespace spyke::communication::connection {
       const bool operator!=( const IP_V6& ) const;
 
 
+      static IP_V6 from_hex( const char*, const short& );
+
       static IP_V6 from_hint( const sockaddr_storage& );
 
   };

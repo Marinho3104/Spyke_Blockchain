@@ -4,7 +4,6 @@
 #include "socket_helper.h"
 #include <unistd.h>
 
-
 template < typename IP_TYPE >
 spyke::communication::connection::Connection< IP_TYPE >::~Connection() { if ( ! is_connected() ) return; close( socket_id ); }
 
@@ -13,13 +12,16 @@ spyke::communication::connection::Connection< IP_TYPE >::Connection( const int& 
 
 template < typename IP_TYPE >
 spyke::communication::connection::Connection< IP_TYPE >::Connection( Connection< IP_TYPE >&& other ) 
-:  socket_id( other.socket_id ), ip( other.ip ), status( STATUS_CODE::CONNECTED ) { other.status = STATUS_CODE::DISCONNECTED; }
+  :  socket_id( other.socket_id ), ip( other.ip ), status( STATUS_CODE::CONNECTED ) { other.status = STATUS_CODE::DISCONNECTED; }
 
 template < typename IP_TYPE >
-spyke::communication::connection::Connection< IP_TYPE >::Connection() : socket_id( 0 ), ip(), status( STATUS_CODE::DISCONNECTED ) {}
+spyke::communication::connection::Connection< IP_TYPE >::Connection() : socket_id( -1 ), ip(), status( STATUS_CODE::DISCONNECTED ) {}
 
 template < typename IP_TYPE >
 const bool spyke::communication::connection::Connection< IP_TYPE >::is_connected() const { return status == STATUS_CODE::CONNECTED; }
+
+template < typename IP_TYPE >
+const int& spyke::communication::connection::Connection< IP_TYPE >::get_socket_id() const { return socket_id; }
 
 template < typename IP_TYPE >
 const bool spyke::communication::connection::Connection< IP_TYPE >::operator==( const Connection< IP_TYPE >& other ) const { return socket_id == other.socket_id && ip == other.ip; }

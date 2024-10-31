@@ -1,6 +1,8 @@
 
+#include <iostream>
 #include "socket_helper.h"
 #include "ip.h"
+#include <cstdio>
 #include <cstring>
 #include <type_traits>
 #include <arpa/inet.h>
@@ -13,14 +15,14 @@ void spyke::communication::socket_helper::close_socket_id( const int& socket_id 
 template < typename IP_TYPE >
 const int spyke::communication::socket_helper::connect_to( const IP_TYPE& connection_ip ) {
   
-  const int socket_id = socket( AF_INET, SOCK_STREAM, IPPROTO_TCP );
-  if( socket_id == -1 ) return -1;
-
   // Need to be mutable for it 
-  // depends o nthe template value
-  struct sockaddr_storage hint; memset( &hint, 0, sizeof( sockaddr_storage ) );
+  // depends on the template value
+  int socket_id; struct sockaddr_storage hint; memset( &hint, 0, sizeof( sockaddr_storage ) );
 
   if constexpr( std::is_same< IP_TYPE, connection::IP_V4 >::value ) {
+
+    socket_id = socket( AF_INET, SOCK_STREAM, IPPROTO_TCP );
+    if( socket_id == -1 ) { perror( "socket" ); return -1; }
 
     sockaddr_in* hint_ptr = reinterpret_cast< sockaddr_in* >( &hint ); 
 
@@ -30,18 +32,20 @@ const int spyke::communication::socket_helper::connect_to( const IP_TYPE& connec
 
   } else {
 
+    socket_id = socket( AF_INET6, SOCK_STREAM, IPPROTO_TCP );
+    if( socket_id == -1 ) { perror( "socket" ); return -1; }
+
     sockaddr_in6* hint_ptr = reinterpret_cast< sockaddr_in6* >( &hint );
 
     hint_ptr->sin6_family = AF_INET6;
     hint_ptr->sin6_port = htons( connection_ip.get_port() );
 
-    if( inet_pton(AF_INET6, connection_ip.get_address(), &hint_ptr->sin6_addr) <= 0 ) 
-      { close( socket_id ); return -1; }
+    std::memcpy( hint_ptr->sin6_addr.s6_addr, connection_ip.get_address(), 16 );
 
   }
 
   const int sts_connect = connect( socket_id, ( sockaddr* ) &hint, sizeof( hint ) );
-  if( sts_connect == -1 ) { close( socket_id ); return -1; }
+  if( sts_connect == -1 ) { perror( "connect" ); close( socket_id ); return -1; }
 
   return socket_id;
 
@@ -51,14 +55,14 @@ const int spyke::communication::socket_helper::connect_to( const IP_TYPE& connec
 template < typename IP_TYPE >
 const int spyke::communication::socket_helper::create_server( const IP_TYPE& server_ip ) {
 
-  const int socket_id = socket( AF_INET, SOCK_STREAM, IPPROTO_TCP );
-  if( socket_id == -1 ) return -1;
-
   // Need to be mutable for it 
   // depends on the template value
-  struct sockaddr_storage hint; memset( &hint, 0, sizeof( sockaddr_storage ) );
+  int socket_id; struct sockaddr_storage hint; memset( &hint, 0, sizeof( sockaddr_storage ) );
 
   if constexpr( std::is_same< IP_TYPE, connection::IP_V4 >::value ) {
+
+    socket_id = socket( AF_INET, SOCK_STREAM, IPPROTO_TCP );
+    if( socket_id == -1 ) { perror( "socket" ); return -1; }
 
     sockaddr_in* hint_ptr = reinterpret_cast< sockaddr_in* >( &hint ); 
 
@@ -68,21 +72,23 @@ const int spyke::communication::socket_helper::create_server( const IP_TYPE& ser
 
   } else {
 
+    socket_id = socket( AF_INET6, SOCK_STREAM, IPPROTO_TCP );
+    if( socket_id == -1 ) { perror( "socket" ); return -1; }
+
     sockaddr_in6* hint_ptr = reinterpret_cast< sockaddr_in6* >( &hint );
 
     hint_ptr->sin6_family = AF_INET6;
     hint_ptr->sin6_port = htons( server_ip.get_port() );
 
-    if( inet_pton(AF_INET6, server_ip.get_address(), &hint_ptr->sin6_addr) <= 0 ) 
-      { close( socket_id ); return -1; }
+    std::memcpy( hint_ptr->sin6_addr.s6_addr, server_ip.get_address(), 16 );
 
   }
 
   const int sts_bind = bind( socket_id, ( sockaddr* ) &hint, sizeof( hint ) );
-  if( sts_bind == -1 ) { close( socket_id ); return -1; }
+  if( sts_bind == -1 ) { perror( "bind" ); close( socket_id ); return -1; }
 
   const int sts_listen = listen( socket_id, 5 );
-  if( sts_listen == -1 ) { close( socket_id ); return -1; }
+  if( sts_listen == -1 ) { perror( "listen" ); close( socket_id ); return -1; }
 
   return socket_id;
 
@@ -95,7 +101,7 @@ const spyke::communication::socket_helper::Accept_Connection_Request_Return spyk
   socklen_t hint_size = sizeof( hint );
 
   const int socket_id = accept( server_socket_id, ( sockaddr* ) &hint, &hint_size );
-  if( socket_id == -1 ) return { hint, -1 };
+  if( socket_id == -1 ) { perror( "accept" ); return { hint, -1 }; }
 
   return { hint, socket_id };
 
