@@ -191,10 +191,3 @@ void ip_check() {
   }
 
 }
-
-/*
-* 
-  char ip_v6_addr[] = "::";
-
-
-*/
