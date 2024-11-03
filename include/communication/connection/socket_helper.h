@@ -5,7 +5,8 @@
 
 #include "connection.h"
 #include <sys/socket.h>
-namespace spyke::communication::socket_helper {
+
+namespace spyke::communication::connection {
 
   struct Accept_Connection_Request_Return {
 
@@ -26,6 +27,10 @@ namespace spyke::communication::socket_helper {
 
   template < typename IP_TYPE >
   connection::Connection< IP_TYPE > convert_connection( const Accept_Connection_Request_Return& );
+
+  const bool send_data_to( const int&, const char*, const size_t& );
+
+  const bool receive_data_from( const int&, char*, const size_t& );
 
 }
 

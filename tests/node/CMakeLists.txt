@@ -18,10 +18,13 @@ add_executable(
   # Main
   ${PROJECT_SOURCE_DIR}/tests/node/main.cpp
 
-  # Communication
+  # Communication/Connection
   ${PROJECT_SOURCE_DIR}/communication/connection/socket_helper.cpp
   ${PROJECT_SOURCE_DIR}/communication/connection/connection.cpp
   ${PROJECT_SOURCE_DIR}/communication/connection/ip.cpp
+
+  # Communication/Communication Protocols
+  ${PROJECT_SOURCE_DIR}/communication/communication_protocols/packet.cpp
 
 )
 
@@ -30,6 +33,7 @@ target_include_directories(
   
   ${PROJECT_NAME} PUBLIC 
 
+  ${PROJECT_SOURCE_DIR}/include/communication/communication_protocols
   ${PROJECT_SOURCE_DIR}/include/communication/connection
 
 )
