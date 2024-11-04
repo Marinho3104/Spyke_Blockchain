@@ -15,7 +15,7 @@ void connection_check() {
 
   std::cout << "\n*** CONNECTION CHECK ***\n" << std::endl;
 
-  char ip_v6_addr[] = "::1"; short port = 8100;
+  char ip_v6_addr[] = "::1"; short port = 8200;
 
   {
     

@@ -1,5 +1,4 @@
 
-
 #include "connection.h"
 #include "ip.h"
 #include "packet.h"
@@ -72,7 +71,7 @@ void arbitrary_communication_check() {
 
   std::cout << "\n*** ARBITRARY COMMUNICATION TEST ***\n" << std::endl;
 
-  short port = 8050;
+  short port = 8500;
   
   {
   
@@ -173,6 +172,23 @@ void arbitrary_communication_check() {
     const spyke::communication::communication_protocols::Packet server_client_packet_received_ip_v4 =
       spyke::communication::communication_protocols::Packet::receive_packet( server_client_connection_ip_v4.get_socket_id() );
     assert( ! server_client_packet_received_ip_v4.is_valid() ); // false
+
+    // Cause the connection peer were closed this should also return an error
+    const spyke::communication::communication_protocols::Packet client_packet_received_ip_v4 =
+      spyke::communication::communication_protocols::Packet::receive_packet( client_connection_ip_v4.get_socket_id() );
+    assert( ! client_packet_received_ip_v4.is_valid() ); // false
+
+    // Send to valid client and then close the connection
+    const bool sts_send_packet_client_ip_v6 = packet.send( client_connection_ip_v6.get_socket_id() );
+    assert( sts_send_packet_client_ip_v6 ); // true
+
+    // Close the connection
+    client_connection_ip_v6.~Connection();
+
+    // Should not be able to get the information also, maybe some to be fixed FIXME
+    const spyke::communication::communication_protocols::Packet client_packet_received_ip_v6 =
+      spyke::communication::communication_protocols::Packet::receive_packet( client_connection_ip_v6.get_socket_id() );
+    assert( ! client_packet_received_ip_v6.is_valid() ); // false
 
     std::cout << "Pass" << std::endl;
 
