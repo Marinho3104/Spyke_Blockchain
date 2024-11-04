@@ -26,6 +26,9 @@ add_executable(
   # Communication/Communication Protocols
   ${PROJECT_SOURCE_DIR}/communication/communication_protocols/packet.cpp
 
+  # Priority Queue
+  ${PROJECT_SOURCE_DIR}/priority_queue/priority_queue.cpp
+
 )
 
 # Add header files
@@ -35,5 +38,7 @@ target_include_directories(
 
   ${PROJECT_SOURCE_DIR}/include/communication/communication_protocols
   ${PROJECT_SOURCE_DIR}/include/communication/connection
+
+  ${PROJECT_SOURCE_DIR}/include/priority_queue
 
 )
