@@ -34,8 +34,6 @@ namespace priority_queue {
       Priority_Queue_Task( const Task_Priority&, const unsigned char[], const size_t& );
 
       Priority_Queue_Task( Priority_Queue_Task&& );
-  
-      const bool is_valid() const;
 
       std::unique_ptr< Priority_Queue_Task >& get_next();
 
@@ -65,7 +63,7 @@ namespace priority_queue {
 
       const bool add_new_task( const Task_Priority&, const unsigned char[], const size_t& );
     
-      Priority_Queue_Task pop_task();
+      std::unique_ptr< Priority_Queue_Task > pop_task();
 
   };
 
