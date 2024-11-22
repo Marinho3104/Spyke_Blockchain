@@ -26,7 +26,6 @@ priority_queue::Priority_Queue::Priority_Queue( const size_t& available_space ) 
 
 priority_queue::Priority_Queue::Priority_Queue( Priority_Queue&& other ) : head( std::move( other.head ) ), available_space( other.available_space ), locker( other.locker ) {}
 
-
 const bool priority_queue::Priority_Queue::add_new_task( const Task_Priority& priority, const unsigned char data[], const size_t& data_size ) {
 
   sem_wait( &locker );
