@@ -6,7 +6,7 @@
 #include <cstddef>
 #include <memory>
 
-namespace priority_queue {
+namespace spyke::priority_queue {
 
   enum Task_Priority {
 
@@ -24,6 +24,7 @@ namespace priority_queue {
       std::unique_ptr< unsigned char[] > task_data;
       const Task_Priority priority;
       const size_t task_data_size;
+      const char task_id;
 
     public:
 
@@ -31,7 +32,7 @@ namespace priority_queue {
 
       Priority_Queue_Task();
 
-      Priority_Queue_Task( const Task_Priority&, const unsigned char[], const size_t& );
+      Priority_Queue_Task( const Task_Priority&, const char&, const unsigned char[], const size_t& );
 
       Priority_Queue_Task( Priority_Queue_Task&& );
 
@@ -50,18 +51,23 @@ namespace priority_queue {
     private:
 
       std::unique_ptr< Priority_Queue_Task > head;
+      bool task_adding_enable;
       size_t available_space;
-      sem_t locker;
+
+      const bool is_empty() const;
 
     public:
 
+      sem_t locker, tasks_available;
       Priority_Queue( const Priority_Queue& ) = delete;
 
       Priority_Queue( const size_t& );
 
       Priority_Queue( Priority_Queue&& );
 
-      const bool add_new_task( const Task_Priority&, const unsigned char[], const size_t& );
+      void disable_tasks_adding();
+
+      const bool add_new_task( std::unique_ptr< Priority_Queue_Task >& );
     
       std::unique_ptr< Priority_Queue_Task > pop_task();
 

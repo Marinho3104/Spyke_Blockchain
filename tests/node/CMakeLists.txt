@@ -28,6 +28,15 @@ add_executable(
 
   # Priority Queue
   ${PROJECT_SOURCE_DIR}/priority_queue/priority_queue.cpp
+  ${PROJECT_SOURCE_DIR}/priority_queue/priority_queue_worker.cpp
+
+  # Node
+  ${PROJECT_SOURCE_DIR}/node/node.cpp
+  ${PROJECT_SOURCE_DIR}/node/node_connections_manager.cpp
+  ${PROJECT_SOURCE_DIR}/node/node_connections_manager_priority_queue_worker.cpp
+
+  # Client
+  ${PROJECT_SOURCE_DIR}/client/node_client.cpp
 
 )
 
@@ -40,5 +49,9 @@ target_include_directories(
   ${PROJECT_SOURCE_DIR}/include/communication/connection
 
   ${PROJECT_SOURCE_DIR}/include/priority_queue
+
+  ${PROJECT_SOURCE_DIR}/include/node
+
+  ${PROJECT_SOURCE_DIR}/include/client
 
 )

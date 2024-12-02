@@ -1,6 +1,4 @@
 
-
-
 #include "packet.h"
 #include "socket_helper.h"
 #include <cstring>
