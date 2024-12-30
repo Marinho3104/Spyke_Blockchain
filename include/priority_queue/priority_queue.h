@@ -1,4 +1,10 @@
 
+/** priority_queue.h - This implementation of a priority queue is designed to manage tasks in a multithreaded environment by prioritizing them based on their importance. 
+ * Tasks are enqueued with associated priority levels, and the queue ensures that higher-priority tasks are processed before lower-priority ones. 
+ * To support concurrent operations, the implementation uses thread-safe mechanisms to handle simultaneous access by multiple threads, preventing race conditions and ensuring consistency. 
+ * - chatgpt.com
+ * **/
+
 #ifndef INCLUDE_PRIORITY_QUEUE_PRIORITY_QUEUE_H
 #define INCLUDE_PRIORITY_QUEUE_PRIORITY_QUEUE_H
 
@@ -8,41 +14,45 @@
 
 namespace spyke::priority_queue {
 
-  enum Task_Priority {
-
-    LOW = 0,
-    MEDIUM = 1,
-    HIGH = 2
-
-  };
-
+  // Represents a Base class for any type of task for a priority queue
   class Priority_Queue_Task {
+
+    public: 
+      
+      // Any type of priority a task can have
+      enum Task_Priority : char {
+
+        LOW = 0,
+        MEDIUM = 1,
+        HIGH = 2
+
+      };
 
     private:
 
-      std::unique_ptr< Priority_Queue_Task > next;
-      std::unique_ptr< unsigned char[] > task_data;
-      const Task_Priority priority;
-      const size_t task_data_size;
-      const char task_id;
+      std::unique_ptr< Priority_Queue_Task > next;  // Because the priority queue is a linked list every task as a reference to the next one
+      const Task_Priority priority;                 // Priority of the task
+      sem_t locker;                                 // To ensure that only one thread can access/change the task data at a time
 
     public:
 
       Priority_Queue_Task( const Priority_Queue_Task& ) = delete;
 
-      Priority_Queue_Task();
-
-      Priority_Queue_Task( const Task_Priority&, const char&, const unsigned char[], const size_t& );
-
       Priority_Queue_Task( Priority_Queue_Task&& );
 
-      std::unique_ptr< Priority_Queue_Task >& get_next();
+      Priority_Queue_Task();
 
-      const std::unique_ptr< unsigned char[] >& get_task_data() const;
+      Priority_Queue_Task( const Task_Priority& );
+
+      Priority_Queue_Task( std::unique_ptr< Priority_Queue_Task >, const Task_Priority& );
+
+      const std::unique_ptr< Priority_Queue_Task >& get_next();
 
       const Task_Priority get_priority() const;
 
-      const size_t get_task_data_size() const;
+      std::unique_ptr< Priority_Queue_Task > set_next( std::unique_ptr< Priority_Queue_Task > );
+
+      virtual void handle_task();
 
   };
 
@@ -50,20 +60,22 @@ namespace spyke::priority_queue {
 
     private:
 
-      std::unique_ptr< Priority_Queue_Task > head;
-      bool task_adding_enable;
-      size_t available_space;
-
-      const bool is_empty() const;
+      std::unique_ptr< Priority_Queue_Task > head;  // Head of the priority queue, also the first task to be popped
+      bool task_adding_enable;                      // Flag to enable new tasks to be added to the queue
+      size_t available_space;                       // Number of tasks that can still be added to the queue
+      sem_t locker;                                 // Locker that ensures that only one thread at the time can add/pop a task from the queue
+      sem_t tasks_available;                        // Special behaviour is used to sinalize and block a pop_task function if the queue is empty
+                                                    // or returning invalid if no more tasks adding are possible
 
     public:
 
-      sem_t locker, tasks_available;
       Priority_Queue( const Priority_Queue& ) = delete;
 
       Priority_Queue( const size_t& );
 
       Priority_Queue( Priority_Queue&& );
+
+      const bool is_empty() const;
 
       void disable_tasks_adding();
 

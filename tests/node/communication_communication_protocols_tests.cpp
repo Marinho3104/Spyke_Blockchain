@@ -69,130 +69,130 @@ Get_Server_Client_Connections_Return get_server_client_connections( short& port 
 
 void arbitrary_communication_check() {
 
-  std::cout << "\n*** ARBITRARY COMMUNICATION TEST ***\n" << std::endl;
-
-  short port = 8500;
-  
-  {
-  
-    std::cout << "\tSending arbitrary data check: ";
-
-    Get_Server_Client_Connections_Return get_server_client_connections_return = get_server_client_connections( port );
-    spyke::communication::connection::Connection< spyke::communication::connection::IP_V4 > server_client_connection_ip_v4 = 
-      std::move( get_server_client_connections_return.server_client_connection_ip_v4 );
-    spyke::communication::connection::Connection< spyke::communication::connection::IP_V6 > server_client_connection_ip_v6 = 
-      std::move( get_server_client_connections_return.server_client_connection_ip_v6 );
-    spyke::communication::connection::Connection< spyke::communication::connection::IP_V4 > client_connection_ip_v4 = 
-      std::move( get_server_client_connections_return.client_connection_ip_v4 );
-    spyke::communication::connection::Connection< spyke::communication::connection::IP_V6 > client_connection_ip_v6 = 
-      std::move( get_server_client_connections_return.client_connection_ip_v6 );
-
-    unsigned char protocol_id = 0; size_t data_size = sizeof( "Testing with random data!!" );
-    unsigned char data[ data_size ]; std::memcpy( data, "Testing with random data!!", data_size );
-
-    spyke::communication::communication_protocols::Packet packet = 
-      spyke::communication::communication_protocols::Packet( protocol_id, data, data_size );
-    assert( packet.is_valid() ); // true
-    
-    const bool sts_send_packet_client_ip_v4 = packet.send( client_connection_ip_v4.get_socket_id() );
-    assert( sts_send_packet_client_ip_v4 ); // true
-
-    const bool sts_send_packet_client_ip_v6 = packet.send( client_connection_ip_v6.get_socket_id() );
-    assert( sts_send_packet_client_ip_v6 ); // true
-     
-    const bool sts_send_packet_server_client_ip_v4 = packet.send( server_client_connection_ip_v4.get_socket_id() );
-    assert( sts_send_packet_server_client_ip_v4 ); // true
-
-    const bool sts_send_packet_server_client_ip_v6 = packet.send( server_client_connection_ip_v6.get_socket_id() );
-    assert( sts_send_packet_server_client_ip_v6 ); // true
-
-    const spyke::communication::communication_protocols::Packet client_packet_received_ip_v4 = 
-      spyke::communication::communication_protocols::Packet::receive_packet( client_connection_ip_v4.get_socket_id() );
-    const spyke::communication::communication_protocols::Packet client_packet_received_ip_v6 = 
-      spyke::communication::communication_protocols::Packet::receive_packet( client_connection_ip_v6.get_socket_id() );
-    assert( client_packet_received_ip_v4.is_valid() ); assert( client_packet_received_ip_v6.is_valid() ); // true
-
-    const spyke::communication::communication_protocols::Packet server_client_packet_received_ip_v4 = 
-      spyke::communication::communication_protocols::Packet::receive_packet( server_client_connection_ip_v4.get_socket_id() );
-    const spyke::communication::communication_protocols::Packet server_client_packet_received_ip_v6 = 
-      spyke::communication::communication_protocols::Packet::receive_packet( server_client_connection_ip_v6.get_socket_id() );
-    assert( server_client_packet_received_ip_v4.is_valid() ); assert( server_client_packet_received_ip_v6.is_valid() ); // true
- 
-    std::unique_ptr< char[] > original_packet_serialized = std::move( packet.serialize() );
-    size_t original_packet_serialized_size = packet.get_serialization_size();
-
-    std::unique_ptr< char[] > client_packet_received_ip_v4_serialized = std::move( client_packet_received_ip_v4.serialize() );
-    size_t client_packet_received_ip_v4_serialized_size = client_packet_received_ip_v4.get_serialization_size();
-
-    std::unique_ptr< char[] > client_packet_received_ip_v6_serialized = std::move( client_packet_received_ip_v6.serialize() );
-    size_t client_packet_received_ip_v6_serialized_size = client_packet_received_ip_v6.get_serialization_size();
-
-    std::unique_ptr< char[] > server_client_packet_received_ip_v4_serialized = std::move( server_client_packet_received_ip_v4.serialize() );
-    size_t server_client_packet_received_ip_v4_serialized_size = server_client_packet_received_ip_v4.get_serialization_size();
-
-    std::unique_ptr< char[] > server_client_packet_received_ip_v6_serialized = std::move( server_client_packet_received_ip_v6.serialize() );
-    size_t server_client_packet_received_ip_v6_serialized_size = server_client_packet_received_ip_v6.get_serialization_size();
-
-    assert( ! std::memcmp( original_packet_serialized.get(), server_client_packet_received_ip_v4_serialized.get(), original_packet_serialized_size ) ); // true
-    assert( ! std::memcmp( original_packet_serialized.get(), server_client_packet_received_ip_v6_serialized.get(), original_packet_serialized_size ) ); // true
-    assert( ! std::memcmp( original_packet_serialized.get(), client_packet_received_ip_v4_serialized.get(), original_packet_serialized_size ) ); // true
-    assert( ! std::memcmp( original_packet_serialized.get(), client_packet_received_ip_v6_serialized.get(), original_packet_serialized_size ) ); // true
-  
-    std::cout << "Pass" << std::endl;
-
-  }
-
-  {
-  
-    std::cout << "\tSending arbitrary data, when one peer is closed/invalid check: ";
-
-    Get_Server_Client_Connections_Return get_server_client_connections_return = get_server_client_connections( port );
-    spyke::communication::connection::Connection< spyke::communication::connection::IP_V4 > server_client_connection_ip_v4 = 
-      std::move( get_server_client_connections_return.server_client_connection_ip_v4 );
-    spyke::communication::connection::Connection< spyke::communication::connection::IP_V6 > server_client_connection_ip_v6 = 
-      std::move( get_server_client_connections_return.server_client_connection_ip_v6 );
-    spyke::communication::connection::Connection< spyke::communication::connection::IP_V4 > client_connection_ip_v4 = 
-      std::move( get_server_client_connections_return.client_connection_ip_v4 );
-    spyke::communication::connection::Connection< spyke::communication::connection::IP_V6 > client_connection_ip_v6 = 
-      std::move( get_server_client_connections_return.client_connection_ip_v6 );
-
-    unsigned char protocol_id = 0; size_t data_size = sizeof( "Testing with random data!!" );
-    unsigned char data[ data_size ]; std::memcpy( data, "Testing with random data!!", data_size );
-
-    spyke::communication::communication_protocols::Packet packet = 
-      spyke::communication::communication_protocols::Packet( protocol_id, data, data_size );
-    assert( packet.is_valid() ); // true
-    
-    // Make server client connection invalid
-    server_client_connection_ip_v4.~Connection();
-    
-    const bool sts_send_packet_server_client_ip_v4 = packet.send( server_client_connection_ip_v4.get_socket_id() );
-    assert( ! sts_send_packet_server_client_ip_v4 ); // false 
-    
-    const spyke::communication::communication_protocols::Packet server_client_packet_received_ip_v4 =
-      spyke::communication::communication_protocols::Packet::receive_packet( server_client_connection_ip_v4.get_socket_id() );
-    assert( ! server_client_packet_received_ip_v4.is_valid() ); // false
-
-    // Cause the connection peer were closed this should also return an error
-    const spyke::communication::communication_protocols::Packet client_packet_received_ip_v4 =
-      spyke::communication::communication_protocols::Packet::receive_packet( client_connection_ip_v4.get_socket_id() );
-    assert( ! client_packet_received_ip_v4.is_valid() ); // false
-
-    // Send to valid client and then close the connection
-    const bool sts_send_packet_client_ip_v6 = packet.send( client_connection_ip_v6.get_socket_id() );
-    assert( sts_send_packet_client_ip_v6 ); // true
-
-    // Close the connection
-    client_connection_ip_v6.~Connection();
-
-    // Should not be able to get the information also, maybe some to be fixed FIXME
-    const spyke::communication::communication_protocols::Packet client_packet_received_ip_v6 =
-      spyke::communication::communication_protocols::Packet::receive_packet( client_connection_ip_v6.get_socket_id() );
-    assert( ! client_packet_received_ip_v6.is_valid() ); // false
-
-    std::cout << "Pass" << std::endl;
-
-  }
+ //  std::cout << "\n*** ARBITRARY COMMUNICATION TEST ***\n" << std::endl;
+ //
+ //  short port = 8500;
+ //  
+ //  {
+ //  
+ //    std::cout << "\tSending arbitrary data check: ";
+ //
+ //    Get_Server_Client_Connections_Return get_server_client_connections_return = get_server_client_connections( port );
+ //    spyke::communication::connection::Connection< spyke::communication::connection::IP_V4 > server_client_connection_ip_v4 = 
+ //      std::move( get_server_client_connections_return.server_client_connection_ip_v4 );
+ //    spyke::communication::connection::Connection< spyke::communication::connection::IP_V6 > server_client_connection_ip_v6 = 
+ //      std::move( get_server_client_connections_return.server_client_connection_ip_v6 );
+ //    spyke::communication::connection::Connection< spyke::communication::connection::IP_V4 > client_connection_ip_v4 = 
+ //      std::move( get_server_client_connections_return.client_connection_ip_v4 );
+ //    spyke::communication::connection::Connection< spyke::communication::connection::IP_V6 > client_connection_ip_v6 = 
+ //      std::move( get_server_client_connections_return.client_connection_ip_v6 );
+ //
+ //    unsigned char protocol_id = 0; size_t data_size = sizeof( "Testing with random data!!" );
+ //    unsigned char data[ data_size ]; std::memcpy( data, "Testing with random data!!", data_size );
+ //
+ //    spyke::communication::communication_protocols::Packet packet = 
+ //      spyke::communication::communication_protocols::Packet( protocol_id, data, data_size );
+ //    assert( packet.is_valid() ); // true
+ //    
+ //    const bool sts_send_packet_client_ip_v4 = packet.send( client_connection_ip_v4.get_socket_id() );
+ //    assert( sts_send_packet_client_ip_v4 ); // true
+ //
+ //    const bool sts_send_packet_client_ip_v6 = packet.send( client_connection_ip_v6.get_socket_id() );
+ //    assert( sts_send_packet_client_ip_v6 ); // true
+ //     
+ //    const bool sts_send_packet_server_client_ip_v4 = packet.send( server_client_connection_ip_v4.get_socket_id() );
+ //    assert( sts_send_packet_server_client_ip_v4 ); // true
+ //
+ //    const bool sts_send_packet_server_client_ip_v6 = packet.send( server_client_connection_ip_v6.get_socket_id() );
+ //    assert( sts_send_packet_server_client_ip_v6 ); // true
+ //
+ //    const spyke::communication::communication_protocols::Packet client_packet_received_ip_v4 = 
+ //      spyke::communication::communication_protocols::Packet::receive_packet( client_connection_ip_v4.get_socket_id() );
+ //    const spyke::communication::communication_protocols::Packet client_packet_received_ip_v6 = 
+ //      spyke::communication::communication_protocols::Packet::receive_packet( client_connection_ip_v6.get_socket_id() );
+ //    assert( client_packet_received_ip_v4.is_valid() ); assert( client_packet_received_ip_v6.is_valid() ); // true
+ //
+ //    const spyke::communication::communication_protocols::Packet server_client_packet_received_ip_v4 = 
+ //      spyke::communication::communication_protocols::Packet::receive_packet( server_client_connection_ip_v4.get_socket_id() );
+ //    const spyke::communication::communication_protocols::Packet server_client_packet_received_ip_v6 = 
+ //      spyke::communication::communication_protocols::Packet::receive_packet( server_client_connection_ip_v6.get_socket_id() );
+ //    assert( server_client_packet_received_ip_v4.is_valid() ); assert( server_client_packet_received_ip_v6.is_valid() ); // true
+ // 
+ //    std::unique_ptr< char[] > original_packet_serialized = std::move( packet.serialize() );
+ //    size_t original_packet_serialized_size = packet.get_serialization_size();
+ //
+ //    std::unique_ptr< char[] > client_packet_received_ip_v4_serialized = std::move( client_packet_received_ip_v4.serialize() );
+ //    size_t client_packet_received_ip_v4_serialized_size = client_packet_received_ip_v4.get_serialization_size();
+ //
+ //    std::unique_ptr< char[] > client_packet_received_ip_v6_serialized = std::move( client_packet_received_ip_v6.serialize() );
+ //    size_t client_packet_received_ip_v6_serialized_size = client_packet_received_ip_v6.get_serialization_size();
+ //
+ //    std::unique_ptr< char[] > server_client_packet_received_ip_v4_serialized = std::move( server_client_packet_received_ip_v4.serialize() );
+ //    size_t server_client_packet_received_ip_v4_serialized_size = server_client_packet_received_ip_v4.get_serialization_size();
+ //
+ //    std::unique_ptr< char[] > server_client_packet_received_ip_v6_serialized = std::move( server_client_packet_received_ip_v6.serialize() );
+ //    size_t server_client_packet_received_ip_v6_serialized_size = server_client_packet_received_ip_v6.get_serialization_size();
+ //
+ //    assert( ! std::memcmp( original_packet_serialized.get(), server_client_packet_received_ip_v4_serialized.get(), original_packet_serialized_size ) ); // true
+ //    assert( ! std::memcmp( original_packet_serialized.get(), server_client_packet_received_ip_v6_serialized.get(), original_packet_serialized_size ) ); // true
+ //    assert( ! std::memcmp( original_packet_serialized.get(), client_packet_received_ip_v4_serialized.get(), original_packet_serialized_size ) ); // true
+ //    assert( ! std::memcmp( original_packet_serialized.get(), client_packet_received_ip_v6_serialized.get(), original_packet_serialized_size ) ); // true
+ //  
+ //    std::cout << "Pass" << std::endl;
+ //
+ //  }
+ //
+ //  {
+ //  
+ //    std::cout << "\tSending arbitrary data, when one peer is closed/invalid check: ";
+ //
+ //    Get_Server_Client_Connections_Return get_server_client_connections_return = get_server_client_connections( port );
+ //    spyke::communication::connection::Connection< spyke::communication::connection::IP_V4 > server_client_connection_ip_v4 = 
+ //      std::move( get_server_client_connections_return.server_client_connection_ip_v4 );
+ //    spyke::communication::connection::Connection< spyke::communication::connection::IP_V6 > server_client_connection_ip_v6 = 
+ //      std::move( get_server_client_connections_return.server_client_connection_ip_v6 );
+ //    spyke::communication::connection::Connection< spyke::communication::connection::IP_V4 > client_connection_ip_v4 = 
+ //      std::move( get_server_client_connections_return.client_connection_ip_v4 );
+ //    spyke::communication::connection::Connection< spyke::communication::connection::IP_V6 > client_connection_ip_v6 = 
+ //      std::move( get_server_client_connections_return.client_connection_ip_v6 );
+ //
+ //    unsigned char protocol_id = 0; size_t data_size = sizeof( "Testing with random data!!" );
+ //    unsigned char data[ data_size ]; std::memcpy( data, "Testing with random data!!", data_size );
+ //
+ //    spyke::communication::communication_protocols::Packet packet = 
+ //      spyke::communication::communication_protocols::Packet( protocol_id, data, data_size );
+ //    assert( packet.is_valid() ); // true
+ //    
+ //    // Make server client connection invalid
+ //    server_client_connection_ip_v4.~Connection();
+ //    
+ //    const bool sts_send_packet_server_client_ip_v4 = packet.send( server_client_connection_ip_v4.get_socket_id() );
+ //    assert( ! sts_send_packet_server_client_ip_v4 ); // false 
+ //    
+ //    const spyke::communication::communication_protocols::Packet server_client_packet_received_ip_v4 =
+ //      spyke::communication::communication_protocols::Packet::receive_packet( server_client_connection_ip_v4.get_socket_id() );
+ //    assert( ! server_client_packet_received_ip_v4.is_valid() ); // false
+ //
+ //    // Cause the connection peer were closed this should also return an error
+ //    const spyke::communication::communication_protocols::Packet client_packet_received_ip_v4 =
+ //      spyke::communication::communication_protocols::Packet::receive_packet( client_connection_ip_v4.get_socket_id() );
+ //    assert( ! client_packet_received_ip_v4.is_valid() ); // false
+ //
+ //    // Send to valid client and then close the connection
+ //    const bool sts_send_packet_client_ip_v6 = packet.send( client_connection_ip_v6.get_socket_id() );
+ //    assert( sts_send_packet_client_ip_v6 ); // true
+ //
+ //    // Close the connection
+ //    client_connection_ip_v6.~Connection();
+ //
+ //    // Should not be able to get the information also, maybe some to be fixed FIXME
+ //    const spyke::communication::communication_protocols::Packet client_packet_received_ip_v6 =
+ //      spyke::communication::communication_protocols::Packet::receive_packet( client_connection_ip_v6.get_socket_id() );
+ //    assert( ! client_packet_received_ip_v6.is_valid() ); // false
+ //
+ //    std::cout << "Pass" << std::endl;
+ //
+ //  }
 
 
 }

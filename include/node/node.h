@@ -16,7 +16,15 @@ namespace spyke::node {
   template < typename SERVER_IP_TYPE >
   struct Node_Settings {
 
-    const Node_Connections_Manager_Settings< SERVER_IP_TYPE > node_connections_manager_settings;
+    Node_Connections_Manager_Settings< SERVER_IP_TYPE > node_connections_manager_settings;
+
+    Node_Settings( const Node_Connections_Manager_Settings< SERVER_IP_TYPE >& ) = delete;
+
+    Node_Settings();
+
+    Node_Settings< SERVER_IP_TYPE >( Node_Settings< SERVER_IP_TYPE >&& );
+
+    Node_Settings( Node_Connections_Manager_Settings< SERVER_IP_TYPE >& );
 
   };
 
@@ -25,9 +33,9 @@ namespace spyke::node {
 
     private:
 
-      const Node_Settings< SERVER_IP_TYPE > settings;
+      Node_Settings< SERVER_IP_TYPE > settings;
 
-      Node_Connections_Manager< SERVER_IP_TYPE > connections_manager;
+      std::shared_ptr< Node_Connections_Manager< SERVER_IP_TYPE > > connections_manager;
 
       NODE_STATUS status;
 
@@ -39,13 +47,15 @@ namespace spyke::node {
 
       Node();
 
-      Node( const Node_Settings< SERVER_IP_TYPE >& );
+      Node( Node_Settings< SERVER_IP_TYPE >& );
       
       const bool is_valid() const;
 
       void start();
 
       void stop();
+
+      std::shared_ptr< Node_Connections_Manager< SERVER_IP_TYPE > > get_connections_manager();
 
   };
 

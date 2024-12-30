@@ -2,6 +2,8 @@
 #include "socket_helper.h"
 #include "connection.h"
 #include "ip.h"
+#include <algorithm>
+#include <array>
 #include <cassert>
 #include <cstring>
 #include <iostream>
@@ -13,13 +15,16 @@ void accept_and_hint_conversion_check( const int&, const int&, spyke::communicat
 
 void connection_check() {
 
-  std::cout << "\n*** CONNECTION CHECK ***\n" << std::endl;
+  std::cout << "\n\t*** CONNECTION CHECK ***\n" << std::endl;
 
-  char ip_v6_addr[] = "::1"; short port = 8200;
+  const char ip_v6_addr_raw[] = "::1"; // "0000:0000:0000:0000:0000:0000:0000:0001";
+  std::array< char, 40 > ip_v6_addr; short port = 8200;
+
+  std::copy( std::begin( ip_v6_addr_raw ), std::end( ip_v6_addr_raw ), std::begin( ip_v6_addr ) );
 
   {
     
-    std::cout << "\tConnection invalid check: ";
+    std::cout << "\t\tConnection invalid check: ";
 
     spyke::communication::connection::Connection< spyke::communication::connection::IP_V4 > connection1;
     spyke::communication::connection::Connection< spyke::communication::connection::IP_V6 > connection2;
@@ -33,7 +38,7 @@ void connection_check() {
 
   {
 
-    std::cout << "\tServer creation check: ";
+    std::cout << "\t\tServer creation check: ";
 
     spyke::communication::connection::IP_V4 ip_v4 = spyke::communication::connection::IP_V4( 0x7F000001, port ++ );
     spyke::communication::connection::IP_V6 ip_v6 = spyke::communication::connection::IP_V6::from_hex( ip_v6_addr, port ++ );
@@ -53,7 +58,7 @@ void connection_check() {
 
   {
 
-    std::cout << "\tServer creation check: ";
+    std::cout << "\t\tServer creation check: ";
 
     spyke::communication::connection::IP_V4 ip_v4 = spyke::communication::connection::IP_V4( 0x7F000001, port ++ );
     spyke::communication::connection::IP_V6 ip_v6 = spyke::communication::connection::IP_V6::from_hex( ip_v6_addr, port ++ );
@@ -73,7 +78,7 @@ void connection_check() {
 
   {
 
-    std::cout << "\tClient connection check: ";
+    std::cout << "\t\tClient connection check: ";
 
     spyke::communication::connection::IP_V4 ip_v4 = spyke::communication::connection::IP_V4( 0x7F000001, port ++ );
     spyke::communication::connection::IP_V6 ip_v6 = spyke::communication::connection::IP_V6::from_hex( ip_v6_addr, port ++ );
@@ -105,7 +110,7 @@ void connection_check() {
 
   {
 
-    std::cout << "\tAccepted connections ip conversion check: ";
+    std::cout << "\t\tAccepted connections ip conversion check: ";
 
     spyke::communication::connection::IP_V4 ip_v4 = spyke::communication::connection::IP_V4( 0x7F000001, port ++ );
     spyke::communication::connection::IP_V6 ip_v6 = spyke::communication::connection::IP_V6::from_hex( ip_v6_addr, port ++ );
@@ -135,7 +140,7 @@ void connection_check() {
 
   {
 
-    std::cout << "\tTrying to connect with invalid server: ";
+    std::cout << "\t\tTrying to connect with invalid server: ";
 
     spyke::communication::connection::IP_V4 ip_v4 = spyke::communication::connection::IP_V4( 0x7F000001, port ++ );
     spyke::communication::connection::IP_V6 ip_v6 = spyke::communication::connection::IP_V6::from_hex( ip_v6_addr, port ++ );
@@ -166,17 +171,17 @@ void accept_and_hint_conversion_check( const int& server_ip_v4, const int& serve
   spyke::communication::connection::IP_V6 ip_v6 = spyke::communication::connection::IP_V6::from_hint( accept_connection_request_ip_v6.hint );
   // for( int _ = 0; _ < 16; _ ++ ) std::cout << ( int ) ip_v6.get_address()[ _ ] << " " ; std::cout << std::endl;
   // for( int _ = 0; _ < 16; _ ++ ) std::cout << ( int ) client_ip_v6.get_address()[ _ ] << " "; std::cout << std::endl;
-  // assert( ::std::memcmp( client_ip_v6.get_address(), ip_v6.get_address(), 16 ) == 0 );
+  // assert( ::std::memcmp( client_ip_v6.get_address() == ip_v6.get_address(), 16 ) == 0 );
 
 }
 
 void ip_check() {
 
-  std::cout << "\n*** IP CHECK ***\n" << std::endl;
+  std::cout << "\n\t*** IP CHECK ***\n" << std::endl;
   
   {
 
-    std::cout << "\tIP_V4 check: ";
+    std::cout << "\t\tIP_V4 check: ";
 
     spyke::communication::connection::IP_V4 ip1 = spyke::communication::connection::IP_V4( 0x7F000001, 8000 ), ip2;
 
@@ -191,9 +196,10 @@ void ip_check() {
 
   {
 
-    std::cout << "\tIP_V6 check: ";
+    std::cout << "\t\tIP_V6 check: ";
 
-    spyke::communication::connection::IP_V6 ip1 = spyke::communication::connection::IP_V6( "5be8:dde9:7f0b:d5a7:bd01:b3be:9c69:573b", 8000 ), ip2;
+    std::array< char, 16 > ip6_addr = { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01 };
+    spyke::communication::connection::IP_V6 ip1 = spyke::communication::connection::IP_V6( ip6_addr, 8000 ), ip2;
 
     assert( ip1.is_valid() ); // true
     assert( ! ip2.is_valid() ); // false 
@@ -203,5 +209,17 @@ void ip_check() {
     std::cout << "Pass" << std::endl;
 
   }
+
+}
+
+
+int main (int argc, char *argv[]) {
+  
+  std::cout << "*** IP AND CONNECTIONS BASIC TESTS ***" << std::endl;
+
+  ip_check();
+  connection_check();
+
+  return 0;
 
 }

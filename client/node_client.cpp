@@ -1,22 +1,22 @@
 
+#include "connection.h"
 #include "node.h"
 #include <csignal>
 #include <cstdio>
 #include <ios>
 #include <iostream>
-#include <limits>
 #include <ostream>
+#include <semaphore.h>
 #include <unistd.h>
 #include "node_client.h"
 
 
 template < typename SERVER_IP_TYPE >
-const bool spyke::client::node::setup( const spyke::node::Node_Settings< SERVER_IP_TYPE >& settigns ) {
+const bool spyke::client::node::setup( spyke::node::Node_Settings< SERVER_IP_TYPE >& settings ) {
 
-  new( & spyke::client::node::node_instance< SERVER_IP_TYPE > ) spyke::node::Node< SERVER_IP_TYPE >( settigns );
+  std::cout << "Setup " << std::endl;
+  new( & spyke::client::node::node_instance< SERVER_IP_TYPE > ) spyke::node::Node< SERVER_IP_TYPE >( settings );
   if( ! spyke::client::node::node_instance< SERVER_IP_TYPE >.is_valid() ) return 0;
-
-  sem_init( &exiting_done, 0, 0 );
 
   if( ! set_signal_mask() ) return 0;
 
@@ -30,12 +30,15 @@ const bool spyke::client::node::setup( const spyke::node::Node_Settings< SERVER_
 template < typename SERVER_IP_TYPE >
 void spyke::client::node::start() {
 
+  std::cout << "Starting" << std::endl;
+
   spyke::client::node::node_instance< SERVER_IP_TYPE >.start();
 
-  input_loop();
+  input_loop< SERVER_IP_TYPE >();
 
 }
 
+template < typename SERVER_IP_TYPE >
 void spyke::client::node::input_loop() {
 
   std::string input;
@@ -64,7 +67,7 @@ const bool spyke::client::node::set_signal_mask() {
 template < typename SERVER_IP_TYPE >
 void spyke::client::node::SIGINT_handler( int ) {
 
-  node_instance< SERVER_IP_TYPE >.stop();
+  spyke::client::node::node_instance< SERVER_IP_TYPE >.stop();
 
   std::cin.setstate( std::ios_base::failbit ); std::cout << "Press Enter to exit ... " << std::flush;
 
@@ -87,8 +90,10 @@ const bool spyke::node::Node_Connections_Manager< SERVER_IP_TYPE >::set_signal_m
 
 
 
-template const bool spyke::client::node::setup( const spyke::node::Node_Settings< communication::connection::IP_V4 > & );
-template const bool spyke::client::node::setup( const spyke::node::Node_Settings< communication::connection::IP_V6 > & );
+template const bool spyke::client::node::setup( spyke::node::Node_Settings< communication::connection::IP_V4 > & );
+template const bool spyke::client::node::setup( spyke::node::Node_Settings< communication::connection::IP_V6 > & );
+template void spyke::client::node::input_loop< spyke::communication::connection::IP_V4 >();
+template void spyke::client::node::input_loop< spyke::communication::connection::IP_V6 >();
 template void spyke::client::node::start< spyke::communication::connection::IP_V4 >();
 template void spyke::client::node::start< spyke::communication::connection::IP_V6 >();
 

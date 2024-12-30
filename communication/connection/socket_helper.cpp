@@ -4,7 +4,6 @@
 #include <cstddef>
 #include <cstdio>
 #include <cstring>
-#include <iostream>
 #include <type_traits>
 #include <arpa/inet.h>
 #include <unistd.h>
@@ -41,7 +40,7 @@ const int spyke::communication::connection::connect_to( const IP_TYPE& connectio
     hint_ptr->sin6_family = AF_INET6;
     hint_ptr->sin6_port = htons( connection_ip.get_port() );
 
-    std::memcpy( hint_ptr->sin6_addr.s6_addr, connection_ip.get_address(), 16 );
+    std::memcpy( hint_ptr->sin6_addr.s6_addr, connection_ip.get_address().data(), 16 );
 
   }
 
@@ -80,7 +79,7 @@ const int spyke::communication::connection::create_server( const IP_TYPE& server
     hint_ptr->sin6_family = AF_INET6;
     hint_ptr->sin6_port = htons( server_ip.get_port() );
 
-    std::memcpy( hint_ptr->sin6_addr.s6_addr, server_ip.get_address(), 16 );
+    std::memcpy( hint_ptr->sin6_addr.s6_addr, server_ip.get_address().data(), 16 );
 
   }
 

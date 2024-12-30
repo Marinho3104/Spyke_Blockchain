@@ -4,16 +4,19 @@
 #include "priority_queue.h"
 #include <pthread.h>
 #include <semaphore.h>
+#include <thread>
 
 spyke::priority_queue::Priority_Queue_Worker::Priority_Queue_Worker( Priority_Queue_Worker&& other ) 
-    : priority_queue( other.priority_queue ), worker_thread( std::move( other.worker_thread ) ), done( other.done ) {}
+    : priority_queue( other.priority_queue ), locker( other.locker ), is_running( other.is_running ) { other.priority_queue.reset(); other.locker = {}; }
 
-spyke::priority_queue::Priority_Queue_Worker::Priority_Queue_Worker() : priority_queue( 0 ) {}
+spyke::priority_queue::Priority_Queue_Worker::Priority_Queue_Worker() : priority_queue( 0 ), is_running( false ) { sem_init( &locker, 0, 1 ); }
 
-spyke::priority_queue::Priority_Queue_Worker::Priority_Queue_Worker( Priority_Queue* priority_queue ) 
-  : priority_queue( priority_queue ), worker_thread( std::thread( &Priority_Queue_Worker::start, this ) ) { sem_init( &done, 0, 0 ); }
+spyke::priority_queue::Priority_Queue_Worker::Priority_Queue_Worker( std::shared_ptr< Priority_Queue > priority_queue ) 
+  : priority_queue( priority_queue ), is_running( false ) { sem_init( &locker, 0, 1 ); }
 
-void spyke::priority_queue::Priority_Queue_Worker::start() {
+const bool spyke::priority_queue::Priority_Queue_Worker::is_valid() const { return priority_queue.get(); }
+
+void spyke::priority_queue::Priority_Queue_Worker::handle() {
 
   std::unique_ptr< Priority_Queue_Task > current_task;
 
@@ -23,14 +26,22 @@ void spyke::priority_queue::Priority_Queue_Worker::start() {
 
     if ( ! current_task ) break;
 
-    handle_new_task( std::move( current_task ) );
+    current_task->handle_task();
 
   }
 
-  sem_post( &done );
+  sem_wait( &locker ); is_running = false; sem_post( &locker );
 
 }
 
-sem_t& spyke::priority_queue::Priority_Queue_Worker::get_done() { return done; }
+const bool spyke::priority_queue::Priority_Queue_Worker::is_thread_running() { sem_wait( &locker ); const bool result = is_running; sem_post( &locker ); return result; }
 
-void spyke::priority_queue::Priority_Queue_Worker::start_handling() { worker_thread.detach(); }
+void spyke::priority_queue::Priority_Queue_Worker::start() {
+
+  if( is_thread_running() ) return;
+
+  sem_wait( &locker ); is_running = true; sem_post( &locker );
+
+  std::thread( &Priority_Queue_Worker::handle, this ).detach(); 
+
+}

@@ -5,16 +5,22 @@
 
 #include <cstddef>
 #include <memory>
+#include <semaphore.h>
 
 namespace spyke::communication::communication_protocols {
+
+  enum PROTOCOL_ID : unsigned char {
+
+    INVALID = 0,
+    SWITCH_TO_STABLE_CONNECTION = 1,
+
+  };
   
   class Packet {
 
     private:
 
-      std::unique_ptr< unsigned char[] > data;
-      const unsigned char protocol_id;
-      const size_t data_size;
+      const PROTOCOL_ID protocol_id;
 
     public:
 
@@ -22,20 +28,22 @@ namespace spyke::communication::communication_protocols {
 
       Packet();
 
-      Packet( const unsigned char&, unsigned char[], const size_t& );
+      Packet( const PROTOCOL_ID& );
 
       Packet( Packet&& );
 
       const bool is_valid() const;
 
-      const size_t get_serialization_size() const;
+      virtual const size_t get_serialization_size() const;
 
-      std::unique_ptr< char[] > serialize() const;
+      virtual std::unique_ptr< char[] > serialize() const;
 
-      const bool send( const int& ) const;
+      // template < typename CONNECTION_IP_TYPE >
+      // const bool send( std::shared_ptr< spyke::communication::connection::Connection< CONNECTION_IP_TYPE > > );
 
     
-      static Packet receive_packet( const int& );
+      // template < typename CONNECTION_IP_TYPE >
+      // static std::unique_ptr< Packet > receive_packet( std::shared_ptr< spyke::communication::connection::Connection< CONNECTION_IP_TYPE > > );
 
   };
 

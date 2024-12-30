@@ -3,9 +3,8 @@
 #define INCLUDE_PRIORITY_QUEUE_PRIORITY_QUEUE_WORKER_H
 
 #include "priority_queue.h"
-#include <semaphore.h>
 #include <memory>
-#include <thread>
+#include <semaphore.h>
 
 namespace spyke::priority_queue {
 
@@ -13,15 +12,11 @@ namespace spyke::priority_queue {
 
     private:
 
-      Priority_Queue* priority_queue;
-      std::thread worker_thread;
-      sem_t done;
+      std::shared_ptr< Priority_Queue > priority_queue; // Reference to the priority queue where this worker will get the tasks from
+      bool is_running;                                  // Sinalizes if the thread start() is running
+      sem_t locker;                                     // Used to sinalize that the worker have exited the start_handling function
 
-      void start();
-
-    protected:
-
-      virtual void handle_new_task( const std::unique_ptr< Priority_Queue_Task >& ) = 0;
+      void handle();
 
     public:
 
@@ -31,11 +26,13 @@ namespace spyke::priority_queue {
 
       Priority_Queue_Worker();
 
-      Priority_Queue_Worker( Priority_Queue* );
+      Priority_Queue_Worker( std::shared_ptr< Priority_Queue > );
 
-      sem_t& get_done();
+      const bool is_valid() const;
 
-      void start_handling();
+      const bool is_thread_running();
+
+      void start();
 
   };
 

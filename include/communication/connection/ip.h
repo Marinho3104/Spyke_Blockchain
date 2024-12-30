@@ -2,6 +2,7 @@
 #ifndef INCLUDE_COMMUNICATION_CONNECTION_IP_H
 #define INCLUDE_COMMUNICATION_CONNECTION_IP_H
 
+#include <array>
 #include <sys/socket.h>
 namespace spyke::communication::connection {
 
@@ -20,9 +21,9 @@ namespace spyke::communication::connection {
 
       const bool is_valid() const;
 
-      const int get_address() const;
+      const int& get_address() const;
 
-      const short get_port() const;
+      const short& get_port() const;
 
       const bool operator==( const IP_V4& ) const;
 
@@ -37,27 +38,27 @@ namespace spyke::communication::connection {
 
     private:
 
-      char address[ 16 ];
-      short port;
+      const std::array< char, 16 > address;
+      const short port;
 
     public:
 
       IP_V6();
 
-      IP_V6( const char[ 16 ], const short& );
+      IP_V6( const std::array< char, 16 >&, const short& );
   
       const bool is_valid() const;
 
-      const char* get_address() const;
+      const std::array< char, 16 >& get_address() const;
 
-      const short get_port() const;
+      const short& get_port() const;
 
       const bool operator==( const IP_V6& ) const;
 
       const bool operator!=( const IP_V6& ) const;
 
 
-      static IP_V6 from_hex( const char*, const short& );
+      static IP_V6 from_hex( const std::array< char, 40 >&, const short& );
 
       static IP_V6 from_hint( const sockaddr_storage& );
 
